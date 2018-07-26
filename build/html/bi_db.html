@@ -1,0 +1,456 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>bi_db documentaiton &mdash; BI 1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="bi_s3 documentaiton" href="bi_s3.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="README.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> BI
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">bi_db documentaiton</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bi_s3.html">bi_s3 documentaiton</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bi_tools.html">bi_tools documentaiton</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BI</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>bi_db documentaiton</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/bi_db.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-bi_db">
+<span id="bi-db-documentaiton"></span><h1>bi_db documentaiton<a class="headerlink" href="#module-bi_db" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="bi_db.SnowflakeConnection">
+<em class="property">class </em><code class="descclassname">bi_db.</code><code class="descname">SnowflakeConnection</code><span class="sig-paren">(</span><em>connection_type='snowflake'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="bi_db.SnowflakeConnection.close_connection">
+<code class="descname">close_connection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.close_connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.close_connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the open connection to Snowflake db.
+Args:</p>
+<blockquote>
+<div>NA</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.SnowflakeConnection.create">
+<code class="descname">create</code><span class="sig-paren">(</span><em>object_name</em>, <em>object_type=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the open connection to Snowflake db.
+Args:</p>
+<blockquote>
+<div>object_name: name of the object you are creating
+object_type: (DATABASE, SCHEMA, WAREHOUSE)
+DATABASE(key argument): name of the database</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.SnowflakeConnection.get_metadata">
+<code class="descname">get_metadata</code><span class="sig-paren">(</span><em>database</em>, <em>schema</em>, <em>table</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.get_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.get_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get and return the metadata table.
+Args:</p>
+<blockquote>
+<div>database: name of the database
+schema: name of the schema
+table: name of the table</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>metadata: list of metadata of each field</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.SnowflakeConnection.get_query_id">
+<code class="descname">get_query_id</code><span class="sig-paren">(</span><em>query_order=-1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.get_query_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.get_query_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get and return the query_id.
+Args:</p>
+<blockquote>
+<div>query_order: the order of the query_id being fetched</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>query_id: the id the of the query</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="bi_db.RedshiftConnection">
+<em class="property">class </em><code class="descclassname">bi_db.</code><code class="descname">RedshiftConnection</code><a class="reference internal" href="_modules/bi_db/redshift_connection.html#RedshiftConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.RedshiftConnection" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="bi_db.RedshiftConnection.change_table_name">
+<code class="descname">change_table_name</code><span class="sig-paren">(</span><em>schema_name</em>, <em>old_table_name</em>, <em>new_table_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/redshift_connection.html#RedshiftConnection.change_table_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.RedshiftConnection.change_table_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the table name of your choice.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first docutils">
+<dt>schema_name: name of the schema the table you want to change the</dt>
+<dd>name of is in</dd>
+</dl>
+<p class="last">old_table_name: name of the table that you want to change
+new_table_name: new name of the table</p>
+</dd>
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.RedshiftConnection.create_table">
+<code class="descname">create_table</code><span class="sig-paren">(</span><em>table_name</em>, <em>schema_name</em>, <em>df=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/redshift_connection.html#RedshiftConnection.create_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.RedshiftConnection.create_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert table.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>df: pandas dataframe to upload
+table_name: name of the table to insert
+schema_name: name of the schema the table is in</dd>
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd><dl class="first last docutils">
+<dt>RedshiftException: Table already exists, so replace_table function</dt>
+<dd>should be used instead</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.RedshiftConnection.csv_s3_merge_redshift">
+<code class="descname">csv_s3_merge_redshift</code><span class="sig-paren">(</span><em>insert_dataframe</em>, <em>table_name</em>, <em>key</em>, <em>schema_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/redshift_connection.html#RedshiftConnection.csv_s3_merge_redshift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.RedshiftConnection.csv_s3_merge_redshift" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Swap out the rows in a specified table in redshift with the rows in</dt>
+<dd>a specified dataframe by merging the two tables on a specified key.</dd>
+<dt>Args:</dt>
+<dd><p class="first">insert_dataframe: pandas DataFrameto insert
+table_name: name of the table on redshift that will be modified
+key: name of the key variable to use
+schema_name: name of the schema that the table</p>
+<blockquote class="last">
+<div>you want to modify is in</div></blockquote>
+</dd>
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.RedshiftConnection.csv_s3_redshift">
+<code class="descname">csv_s3_redshift</code><span class="sig-paren">(</span><em>insert_dataframe</em>, <em>table_name</em>, <em>schema_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/redshift_connection.html#RedshiftConnection.csv_s3_redshift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.RedshiftConnection.csv_s3_redshift" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Saves the CSV, uploads the CSV to S3, and updates the table within</dt>
+<dd>Redshift.</dd>
+<dt>Args:</dt>
+<dd>query: query to execute</dd>
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd><dl class="first last docutils">
+<dt>InternalError: when the table named after <cite>table_name</cite> does not</dt>
+<dd>exist in <cite>scehma_name</cite></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.RedshiftConnection.drop_table">
+<code class="descname">drop_table</code><span class="sig-paren">(</span><em>table_name</em>, <em>schema_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/redshift_connection.html#RedshiftConnection.drop_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.RedshiftConnection.drop_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Drop the specified table in the specified schema.
+Args:</p>
+<blockquote>
+<div>table_name: name of the table that needs to be dropped
+schema_name: name of the schema that the table_name is in</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.RedshiftConnection.query_executor">
+<code class="descname">query_executor</code><span class="sig-paren">(</span><em>query</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/redshift_connection.html#RedshiftConnection.query_executor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.RedshiftConnection.query_executor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes the specified query.
+Args:</p>
+<blockquote>
+<div>query: query to execute</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.RedshiftConnection.replace_table">
+<code class="descname">replace_table</code><span class="sig-paren">(</span><em>df</em>, <em>table_name</em>, <em>schema_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/redshift_connection.html#RedshiftConnection.replace_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.RedshiftConnection.replace_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace an existing table.
+Args:</p>
+<blockquote>
+<div>df: pandas dataframe to upload
+table_name: name of the table to replace
+schema_name: name of the schema the table is in</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.RedshiftConnection.sql_dataframe">
+<code class="descname">sql_dataframe</code><span class="sig-paren">(</span><em>query</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/redshift_connection.html#RedshiftConnection.sql_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.RedshiftConnection.sql_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Execute the query and return the queried results</dt>
+<dd>in a pandas dataframe.</dd>
+<dt>Args:</dt>
+<dd>query: query to execute</dd>
+<dt>Returns:</dt>
+<dd>df_result: pandas DataFrame of the queried result</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.RedshiftConnection.update_table">
+<code class="descname">update_table</code><span class="sig-paren">(</span><em>df</em>, <em>table_name</em>, <em>schema_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/redshift_connection.html#RedshiftConnection.update_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.RedshiftConnection.update_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the sql data table of your choice</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>df: pandas dataframe to upload
+table_name: name of the table to insert
+schema_name: name of the schema the table is in</dd>
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="bi_s3.html" class="btn btn-neutral float-right" title="bi_s3 documentaiton" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="README.html" class="btn btn-neutral" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Jun.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
