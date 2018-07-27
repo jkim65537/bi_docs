@@ -29,7 +29,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="bi_s3 documentaiton" href="bi_s3.html" />
-    <link rel="prev" title="&lt;no title&gt;" href="README.html" /> 
+    <link rel="prev" title="Welcome to PitchBook Business Intelligence team’s documentation!" href="index.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -154,15 +154,19 @@
 <span id="bi-db-documentaiton"></span><h1>bi_db documentaiton<a class="headerlink" href="#module-bi_db" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="bi_db.SnowflakeConnection">
-<em class="property">class </em><code class="descclassname">bi_db.</code><code class="descname">SnowflakeConnection</code><span class="sig-paren">(</span><em>connection_type='snowflake'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">bi_db.</code><code class="descname">SnowflakeConnection</code><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
-<dt id="bi_db.SnowflakeConnection.close_connection">
-<code class="descname">close_connection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.close_connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.close_connection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Close the open connection to Snowflake db.
-Args:</p>
-<blockquote>
-<div>NA</div></blockquote>
-<dl class="docutils">
+<dt id="bi_db.SnowflakeConnection.append">
+<code class="descname">append</code><span class="sig-paren">(</span><em>schema_name</em>, <em>table_name</em>, <em>filepath</em>, <em>format='csv'</em>, <em>db_name='BUSINESS_INTELLIGENCE'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.append" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Bulk append s3 object into Snowflake.</dt>
+<dd>Can append the same object only once.</dd>
+<dt>Args:</dt>
+<dd>db_name: name of the database in snowflake
+schema_name: name of the schema in snowflake
+table_name: name of the table in snowflake
+filepath: filepath of the s3 object
+format: format of the s3 object</dd>
 <dt>Returns:</dt>
 <dd>NA</dd>
 <dt>Raises:</dt>
@@ -171,15 +175,30 @@ Args:</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="bi_db.SnowflakeConnection.cancel_query">
+<code class="descname">cancel_query</code><span class="sig-paren">(</span><em>query_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.cancel_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.cancel_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cancel the query of the given query_id.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>query_id: the of query you want to cancel</dd>
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd>SnowflakeException</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="bi_db.SnowflakeConnection.create">
 <code class="descname">create</code><span class="sig-paren">(</span><em>object_name</em>, <em>object_type=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.create" title="Permalink to this definition">¶</a></dt>
-<dd><p>Close the open connection to Snowflake db.
-Args:</p>
-<blockquote>
-<div>object_name: name of the object you are creating
-object_type: (DATABASE, SCHEMA, WAREHOUSE)
-DATABASE(key argument): name of the database</div></blockquote>
+<dd><p>Create a database object.</p>
 <dl class="docutils">
+<dt>Args:</dt>
+<dd>object_name: name of the object you are creating
+object_type: (DATABASE, SCHEMA, WAREHOUSE, TABLE)
+DATABASE(key argument): name of the database
+SCHEMA(key argument): name of the schema
+df(key argument): dataframe you want to create the table with</dd>
 <dt>Returns:</dt>
 <dd>NA</dd>
 <dt>Raises:</dt>
@@ -189,14 +208,13 @@ DATABASE(key argument): name of the database</div></blockquote>
 
 <dl class="method">
 <dt id="bi_db.SnowflakeConnection.get_metadata">
-<code class="descname">get_metadata</code><span class="sig-paren">(</span><em>database</em>, <em>schema</em>, <em>table</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.get_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.get_metadata" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get and return the metadata table.
-Args:</p>
-<blockquote>
-<div>database: name of the database
-schema: name of the schema
-table: name of the table</div></blockquote>
+<code class="descname">get_metadata</code><span class="sig-paren">(</span><em>db_name</em>, <em>schema_name</em>, <em>table_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.get_metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.get_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get and return the metadata table.</p>
 <dl class="docutils">
+<dt>Args:</dt>
+<dd>database: name of the database
+schema: name of the schema
+table: name of the table</dd>
 <dt>Returns:</dt>
 <dd>metadata: list of metadata of each field</dd>
 <dt>Raises:</dt>
@@ -207,13 +225,132 @@ table: name of the table</div></blockquote>
 <dl class="method">
 <dt id="bi_db.SnowflakeConnection.get_query_id">
 <code class="descname">get_query_id</code><span class="sig-paren">(</span><em>query_order=-1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.get_query_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.get_query_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get and return the query_id.
-Args:</p>
-<blockquote>
-<div>query_order: the order of the query_id being fetched</div></blockquote>
+<dd><p>Get and return the query_id.</p>
 <dl class="docutils">
+<dt>Args:</dt>
+<dd>query_order: the order of the query_id being fetched</dd>
 <dt>Returns:</dt>
 <dd>query_id: the id the of the query</dd>
+<dt>Raises:</dt>
+<dd>SnowflakeException</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.SnowflakeConnection.load">
+<code class="descname">load</code><span class="sig-paren">(</span><em>db_name</em>, <em>schema_name</em>, <em>table_name</em>, <em>filepath</em>, <em>format</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load s3 object into Snowflake.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>db_name: name of the database in snowflake
+schema_name: name of the schema in snowflake
+table_name: name of the table in snowflake
+filepath: filepath of the s3 object
+format: format of the s3 object</dd>
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.SnowflakeConnection.query_executor">
+<code class="descname">query_executor</code><span class="sig-paren">(</span><em>query</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.query_executor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.query_executor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes the query.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>query: query to execute</dd>
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.SnowflakeConnection.replace">
+<code class="descname">replace</code><span class="sig-paren">(</span><em>schema_name</em>, <em>table_name</em>, <em>filepath</em>, <em>format='csv'</em>, <em>db_name='BUSINESS_INTELLIGENCE'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.replace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.replace" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Bulk replace s3 object into Snowflake.</dt>
+<dd>Can replace with the same s3 object more than once.</dd>
+<dt>Args:</dt>
+<dd>db_name: name of the database in snowflake
+schema_name: name of the schema in snowflake
+table_name: name of the table in snowflake
+filepath: filepath of the s3 object
+format: format of the s3 object</dd>
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.SnowflakeConnection.sql_dataframe">
+<code class="descname">sql_dataframe</code><span class="sig-paren">(</span><em>query</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.sql_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.sql_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Execute the query and return the queried results</dt>
+<dd>in a pandas dataframe.</dd>
+<dt>Args:</dt>
+<dd>query: query to execute</dd>
+<dt>Returns:</dt>
+<dd>df_result: pandas DataFrame of the queried result</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.SnowflakeConnection.unload">
+<code class="descname">unload</code><span class="sig-paren">(</span><em>database</em>, <em>schema</em>, <em>table</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.unload"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.unload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unload a database table into a specified s3 location</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>database: name of the database
+schema_name: name of the schema
+table_name: name of the table
+s3_path: filepath of the s3 object
+kwargs: [“aws_access_key_id”, “aws_secret_access_key”]</dd>
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.SnowflakeConnection.update">
+<code class="descname">update</code><span class="sig-paren">(</span><em>schema_name</em>, <em>table_name</em>, <em>filepath</em>, <em>update_on</em>, <em>format='comma_delimited'</em>, <em>db_name='BUSINESS_INTELLIGENCE'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bulk upsert s3 object into Snowflake</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>db_name: name of the database in snowflake
+schema_name: name of the schema in snowflake
+table_name: name of the table in snowflake
+update_on: name of the column to update on
+filepath: filepath of the s3 object
+format: format of the s3 object</dd>
+<dt>Returns:</dt>
+<dd>NA</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.SnowflakeConnection.write_to_sql">
+<code class="descname">write_to_sql</code><span class="sig-paren">(</span><em>df</em>, <em>db_name</em>, <em>schema_name</em>, <em>table_name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/snowflake_connection.html#SnowflakeConnection.write_to_sql"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.SnowflakeConnection.write_to_sql" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append to or replace an existing table in snowflake.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>db_name: name of the database in snowflake
+schema_name: name of the schema in snowflake
+table_name: name of the table in snowflake
+kwargs: [“if_exists”]</dd>
+<dt>Returns:</dt>
+<dd>NA</dd>
 <dt>Raises:</dt>
 <dd>NA</dd>
 </dl>
@@ -307,12 +444,11 @@ schema_name: name of the schema that the table</p>
 <dl class="method">
 <dt id="bi_db.RedshiftConnection.drop_table">
 <code class="descname">drop_table</code><span class="sig-paren">(</span><em>table_name</em>, <em>schema_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/redshift_connection.html#RedshiftConnection.drop_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.RedshiftConnection.drop_table" title="Permalink to this definition">¶</a></dt>
-<dd><p>Drop the specified table in the specified schema.
-Args:</p>
-<blockquote>
-<div>table_name: name of the table that needs to be dropped
-schema_name: name of the schema that the table_name is in</div></blockquote>
+<dd><p>Drop the specified table in the specified schema.</p>
 <dl class="docutils">
+<dt>Args:</dt>
+<dd>table_name: name of the table that needs to be dropped
+schema_name: name of the schema that the table_name is in</dd>
 <dt>Returns:</dt>
 <dd>NA</dd>
 <dt>Raises:</dt>
@@ -323,11 +459,10 @@ schema_name: name of the schema that the table_name is in</div></blockquote>
 <dl class="method">
 <dt id="bi_db.RedshiftConnection.query_executor">
 <code class="descname">query_executor</code><span class="sig-paren">(</span><em>query</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/redshift_connection.html#RedshiftConnection.query_executor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.RedshiftConnection.query_executor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Executes the specified query.
-Args:</p>
-<blockquote>
-<div>query: query to execute</div></blockquote>
+<dd><p>Executes the specified query.</p>
 <dl class="docutils">
+<dt>Args:</dt>
+<dd>query: query to execute</dd>
 <dt>Returns:</dt>
 <dd>NA</dd>
 <dt>Raises:</dt>
@@ -338,13 +473,12 @@ Args:</p>
 <dl class="method">
 <dt id="bi_db.RedshiftConnection.replace_table">
 <code class="descname">replace_table</code><span class="sig-paren">(</span><em>df</em>, <em>table_name</em>, <em>schema_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/redshift_connection.html#RedshiftConnection.replace_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.RedshiftConnection.replace_table" title="Permalink to this definition">¶</a></dt>
-<dd><p>Replace an existing table.
-Args:</p>
-<blockquote>
-<div>df: pandas dataframe to upload
-table_name: name of the table to replace
-schema_name: name of the schema the table is in</div></blockquote>
+<dd><p>Replace an existing table.</p>
 <dl class="docutils">
+<dt>Args:</dt>
+<dd>df: pandas dataframe to upload
+table_name: name of the table to replace
+schema_name: name of the schema the table is in</dd>
 <dt>Returns:</dt>
 <dd>NA</dd>
 <dt>Raises:</dt>
@@ -362,6 +496,24 @@ schema_name: name of the schema the table is in</div></blockquote>
 <dd>query: query to execute</dd>
 <dt>Returns:</dt>
 <dd>df_result: pandas DataFrame of the queried result</dd>
+<dt>Raises:</dt>
+<dd>NA</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="bi_db.RedshiftConnection.unload">
+<code class="descname">unload</code><span class="sig-paren">(</span><em>database</em>, <em>schema</em>, <em>table</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_db/redshift_connection.html#RedshiftConnection.unload"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_db.RedshiftConnection.unload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unload a database table into a specified s3 location</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>database: name of the database
+schema_name: name of the schema
+table_name: name of the table
+s3_path: filepath of the s3 object
+kwargs: [“aws_access_key_id”, “aws_secret_access_key”]</dd>
+<dt>Returns:</dt>
+<dd>NA</dd>
 <dt>Raises:</dt>
 <dd>NA</dd>
 </dl>
@@ -398,7 +550,7 @@ schema_name: name of the schema the table is in</dd>
         <a href="bi_s3.html" class="btn btn-neutral float-right" title="bi_s3 documentaiton" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="README.html" class="btn btn-neutral" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="index.html" class="btn btn-neutral" title="Welcome to PitchBook Business Intelligence team’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
