@@ -1,5 +1,6 @@
 bi_db documentaiton
 ==============================
+
 .. automodule:: bi_db
  
 .. autoclass:: SnowflakeConnection
