@@ -186,6 +186,21 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">RedshiftConnection</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">connection_type</span><span class="o">=</span><span class="n">ctype</span><span class="p">,</span>
                                                 <span class="n">creds</span><span class="o">=</span><span class="n">redshift_creds</span><span class="p">,</span>
                                                 <span class="n">port</span><span class="o">=</span><span class="n">port_num</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">s3_path</span><span class="p">):</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        copy </span><span class="si">{schemaname}</span><span class="s2">.</span><span class="si">{tablename}</span><span class="s2"></span>
+<span class="s2">        from &#39;</span><span class="si">{s3path}</span><span class="s2">&#39;</span>
+<span class="s2">        iam_role &#39;arn:aws:iam::542960883369:role/redshift_access_role&#39;</span>
+<span class="s2">        DELIMITER &#39;,&#39;</span>
+<span class="s2">        IGNOREHEADER 1</span>
+<span class="s2">        maxerror as 100</span>
+<span class="s2">        csv dateformat &#39;auto&#39;;</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">schemaname</span><span class="o">=</span><span class="n">schema_name</span><span class="p">,</span>
+                    <span class="n">tablename</span><span class="o">=</span> <span class="n">table_name</span><span class="p">,</span>
+                    <span class="n">s3path</span><span class="o">=</span><span class="n">s3_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
 <div class="viewcode-block" id="RedshiftConnection.unload"><a class="viewcode-back" href="../../bi_db.html#bi_db.RedshiftConnection.unload">[docs]</a>    <span class="k">def</span> <span class="nf">unload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Unload a database table into a specified s3 location</span>
 
@@ -230,6 +245,7 @@
 <span class="s2">        ADDQUOTES </span><span class="se">\</span>
 <span class="s2">        NULL AS &#39;&#39; </span><span class="se">\</span>
 <span class="s2">        ALLOWOVERWRITE </span><span class="se">\</span>
+<span class="s2">        MAXFILESIZE AS 2500 </span><span class="se">\</span>
 <span class="s2">        PARALLEL OFF;&quot;&quot;&quot;</span>\
             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">,</span>
                    <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
@@ -245,6 +261,7 @@
 <span class="s2">        ADDQUOTES </span><span class="se">\</span>
 <span class="s2">        NULL AS &#39;&#39; </span><span class="se">\</span>
 <span class="s2">        ALLOWOVERWRITE </span><span class="se">\</span>
+<span class="s2">        MAXFILESIZE AS 2500 </span><span class="se">\</span>
 <span class="s2">        PARALLEL OFF;&quot;&quot;&quot;</span>\
             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">,</span>
                    <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
@@ -497,7 +514,7 @@
 <div class="viewcode-block" id="RedshiftConnection.csv_s3_merge_redshift"><a class="viewcode-back" href="../../bi_db.html#bi_db.RedshiftConnection.csv_s3_merge_redshift">[docs]</a>    <span class="k">def</span> <span class="nf">csv_s3_merge_redshift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">insert_dataframe</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Swap out the rows in a specified table in redshift with the rows in</span>
 <span class="sd">           a specified dataframe by merging the two tables on a specified key.</span>
-<span class="sd">           </span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            insert_dataframe: pandas DataFrameto insert</span>
 <span class="sd">            table_name: name of the table on redshift that will be modified</span>

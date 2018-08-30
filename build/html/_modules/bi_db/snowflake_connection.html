@@ -160,12 +160,15 @@
 <span class="kn">from</span> <span class="nn">bi_tools</span> <span class="k">import</span> <span class="n">flex_read</span>
 <span class="kn">from</span> <span class="nn">bi_tools</span> <span class="k">import</span> <span class="n">flex_write</span>
 
+<span class="kn">from</span> <span class="nn">s3_buckets</span> <span class="k">import</span> <span class="n">S3Buckets</span>
+<span class="n">s3_snowflake</span> <span class="o">=</span> <span class="n">S3Buckets</span><span class="p">()</span><span class="o">.</span><span class="n">snowflake</span>
 <span class="kn">from</span> <span class="nn">biz_intel_creds</span> <span class="k">import</span> <span class="n">CredsList</span>
 <span class="n">snowflake_creds</span> <span class="o">=</span> <span class="n">CredsList</span><span class="p">()</span><span class="o">.</span><span class="n">snowflake</span>
 
 <div class="viewcode-block" id="SnowflakeConnection"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection">[docs]</a><span class="k">class</span> <span class="nc">SnowflakeConnection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Sets up connection and class attributes</span>
+        <span class="sd">&quot;&quot;&quot;Snowflake Database Connection. Wrapper library designed and built</span>
+<span class="sd">        to help users run database operations on Snowflake more easily.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            NA</span>
@@ -182,13 +185,17 @@
                         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
 
-<div class="viewcode-block" id="SnowflakeConnection.write_to_sql"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.write_to_sql">[docs]</a>    <span class="k">def</span> <span class="nf">write_to_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Append to or replace an existing table in snowflake.</span>
+<div class="viewcode-block" id="SnowflakeConnection.write_to_sql"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.write_to_sql">[docs]</a>    <span class="k">def</span> <span class="nf">write_to_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span>
+        <span class="n">db_name</span><span class="o">=</span><span class="n">s3_snowflake</span><span class="p">[</span><span class="s2">&quot;database_name&quot;</span><span class="p">],</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Writes records stored in a DataFrame to Snowflake database.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            db_name: name of the database in snowflake</span>
+
 <span class="sd">            schema_name: name of the schema in snowflake</span>
+
 <span class="sd">            table_name: name of the table in snowflake</span>
+
 <span class="sd">            kwargs: [&quot;if_exists&quot;]</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            NA</span>
@@ -215,31 +222,44 @@
         <span class="n">df</span><span class="o">.</span><span class="n">to_sql</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">con</span><span class="o">=</span><span class="n">custom_engine</span><span class="p">,</span> <span class="n">if_exists</span><span class="o">=</span><span class="n">if_exists</span><span class="p">,</span>
             <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SnowflakeConnection.load"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span>
-        <span class="n">filepath</span><span class="p">,</span> <span class="nb">format</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Load s3 object into Snowflake.</span>
+<div class="viewcode-block" id="SnowflakeConnection.load"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span>
+        <span class="n">filepath</span><span class="p">,</span> <span class="nb">format</span> <span class="p">,</span> <span class="n">db_name</span><span class="o">=</span><span class="n">s3_snowflake</span><span class="p">[</span><span class="s2">&quot;database_name&quot;</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;Loads s3 object into Snowflake.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            db_name: name of the database in snowflake</span>
+
 <span class="sd">            schema_name: name of the schema in snowflake</span>
+
 <span class="sd">            table_name: name of the table in snowflake</span>
+
 <span class="sd">            filepath: filepath of the s3 object</span>
+
 <span class="sd">            format: format of the s3 object</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            NA</span>
 <span class="sd">        Raises:</span>
 <span class="sd">            NA</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_bucket</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;CSV&quot;</span><span class="p">:</span>
             <span class="nb">format</span> <span class="o">=</span> <span class="s2">&quot;comma_delimited&quot;</span>
         <span class="k">elif</span> <span class="nb">format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;JSON&quot;</span><span class="p">:</span>
-            <span class="c1">#format = &quot;&quot;</span>
             <span class="k">raise</span> <span class="n">SnowflakeException</span><span class="p">(</span><span class="s2">&quot;format not supported&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;GZIP&quot;</span><span class="p">:</span>
-            <span class="c1">#format = &quot;&quot;</span>
             <span class="k">raise</span> <span class="n">SnowflakeException</span><span class="p">(</span><span class="s2">&quot;format not supported&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">SnowflakeException</span><span class="p">(</span><span class="s2">&quot;format not supported&quot;</span><span class="p">)</span>
+
+        <span class="n">bucket_name</span> <span class="o">=</span> <span class="n">bucket</span><span class="p">[</span><span class="s2">&quot;bucket_name&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s2">&quot;.gz&quot;</span> <span class="ow">in</span> <span class="n">filepath</span><span class="p">:</span>
+            <span class="n">gz_df</span> <span class="o">=</span> <span class="n">flex_read</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">s3</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bucket_name</span><span class="o">=</span><span class="n">bucket_name</span><span class="p">)</span>
+            <span class="kn">import</span> <span class="nn">random</span>
+            <span class="n">random_num</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">101</span><span class="p">)</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{prefix}</span><span class="s2">/tempfile/tempfile_</span><span class="si">{num}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">prefix</span><span class="o">=</span><span class="n">s3_snowflake</span><span class="p">[</span><span class="s2">&quot;prefix&quot;</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="n">random_num</span><span class="p">)</span>
+            <span class="n">flex_write</span><span class="p">(</span><span class="n">gz_df</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">s3</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="n">load_query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">        COPY INTO </span><span class="si">{schema}</span><span class="s2">.</span><span class="si">{table}</span><span class="s2"> FROM </span><span class="si">{filepath}</span><span class="s2"></span>
@@ -248,22 +268,16 @@
 <span class="s2">        force=true;</span>
 <span class="s2">                    &quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">schema_name</span><span class="p">,</span>
                             <span class="n">table</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span>
-                            <span class="n">filepath</span><span class="o">=</span><span class="n">filepath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
-                                <span class="s2">&quot;s3://pitchbook-snowflake&quot;</span><span class="p">,</span>
-                                <span class="s2">&quot;@pb_snowflake&quot;</span>
-                            <span class="p">),</span>
+                            <span class="n">filepath</span><span class="o">=</span><span class="n">filepath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">bucket</span><span class="p">[</span><span class="s2">&quot;prefix&quot;</span><span class="p">],</span>
+                                                    <span class="n">bucket</span><span class="p">[</span><span class="s2">&quot;stage&quot;</span><span class="p">]),</span>
                             <span class="nb">format</span><span class="o">=</span><span class="nb">format</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table_exists</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">db_name</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE SCHEMA </span><span class="si">{}</span><span class="s2">.PUBLIC&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db_name</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table_exists</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">db_name</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE SCHEMA </span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="s2">&quot;PUBLIC&quot;</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="n">load_query</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;COMMIT&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s2">&quot;pitchbook-snowflake&quot;</span> <span class="ow">in</span> <span class="n">filepath</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-                <span class="n">df</span> <span class="o">=</span> <span class="n">flex_read</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">s3</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                    <span class="n">bucket_name</span><span class="o">=</span><span class="s2">&quot;pitchbook-snowflake&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="s2">&quot;pb-unified-usage-data-source&quot;</span> <span class="ow">in</span> <span class="n">filepath</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-                <span class="n">df</span> <span class="o">=</span> <span class="n">flex_read</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">s3</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                    <span class="n">bucket_name</span><span class="o">=</span><span class="s2">&quot;pb-unified-usage-data-source&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">flex_read</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">s3</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">bucket_name</span><span class="o">=</span><span class="n">bucket</span><span class="p">[</span><span class="s2">&quot;bucket_name&quot;</span><span class="p">],</span> <span class="n">nrows</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;USE SCHEMA </span><span class="si">{db_name}</span><span class="s2">.</span><span class="si">{schema}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">db_name</span><span class="o">=</span><span class="n">db_name</span><span class="p">,</span>
                 <span class="n">schema</span><span class="o">=</span><span class="n">schema_name</span>
@@ -278,21 +292,24 @@
                 <span class="p">)</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;DELETE FROM </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table_name</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE SCHEMA </span><span class="si">{}</span><span class="s2">.PUBLIC&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db_name</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE SCHEMA </span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="s2">&quot;PUBLIC&quot;</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="n">load_query</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;COMMIT&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_grant_permission</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SnowflakeConnection.append"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.append">[docs]</a>    <span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span>
-        <span class="n">filepath</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span> <span class="n">db_name</span><span class="o">=</span><span class="s2">&quot;BUSINESS_INTELLIGENCE&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Bulk append s3 object into Snowflake.</span>
-<span class="sd">            Can append the same object only once.</span>
+        <span class="n">filepath</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span> <span class="n">db_name</span><span class="o">=</span><span class="n">s3_snowflake</span><span class="p">[</span><span class="s2">&quot;database_name&quot;</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;Bulk appends s3 object into Snowflake.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            db_name: name of the database in snowflake</span>
+
 <span class="sd">            schema_name: name of the schema in snowflake</span>
+
 <span class="sd">            table_name: name of the table in snowflake</span>
+
 <span class="sd">            filepath: filepath of the s3 object</span>
+
 <span class="sd">            format: format of the s3 object</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            NA</span>
@@ -300,64 +317,74 @@
 <span class="sd">            NA</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># default bulk load is bulk append</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span>
-            <span class="n">filepath</span><span class="p">,</span> <span class="nb">format</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span>
+            <span class="n">filepath</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">db_name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SnowflakeConnection.update"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span>
-        <span class="n">update_on</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;comma_delimited&quot;</span><span class="p">,</span> <span class="n">db_name</span><span class="o">=</span><span class="s2">&quot;BUSINESS_INTELLIGENCE&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Bulk upsert s3 object into Snowflake</span>
+<div class="viewcode-block" id="SnowflakeConnection.update"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">update_on</span><span class="p">,</span>
+        <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;comma_delimited&quot;</span><span class="p">,</span> <span class="n">db_name</span><span class="o">=</span><span class="n">s3_snowflake</span><span class="p">[</span><span class="s2">&quot;database_name&quot;</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;Bulk upserts s3 object into Snowflake.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            db_name: name of the database in snowflake</span>
+
 <span class="sd">            schema_name: name of the schema in snowflake</span>
+
 <span class="sd">            table_name: name of the table in snowflake</span>
+
 <span class="sd">            update_on: name of the column to update on</span>
+
 <span class="sd">            filepath: filepath of the s3 object</span>
+
 <span class="sd">            format: format of the s3 object</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            NA</span>
 <span class="sd">        Raises:</span>
 <span class="sd">            NA</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_bucket</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
         <span class="c1"># create staging_{destination_table_name}</span>
         <span class="c1"># and upload to staging</span>
         <span class="n">staging_name</span> <span class="o">=</span> <span class="s2">&quot;STAGING_&quot;</span> <span class="o">+</span> <span class="n">table_name</span>
-        <span class="k">if</span> <span class="s2">&quot;pitchbook-snowflake&quot;</span> <span class="ow">in</span> <span class="n">filepath</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="n">flex_read</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">s3</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bucket_name</span><span class="o">=</span><span class="s2">&quot;pitchbook-snowflake&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="s2">&quot;pb-unified-usage-data-source&quot;</span> <span class="ow">in</span> <span class="n">filepath</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-            <span class="n">df</span> <span class="o">=</span> <span class="n">flex_read</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">s3</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">bucket_name</span><span class="o">=</span><span class="s2">&quot;pb-unified-usage-data-source&quot;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">flex_read</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">s3</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">bucket_name</span><span class="o">=</span><span class="n">bucket</span><span class="p">[</span><span class="s2">&quot;bucket_name&quot;</span><span class="p">],</span> <span class="n">nrows</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
         <span class="n">column_list</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="n">update_column_match_string</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="s2">&quot;</span><span class="si">{column}</span><span class="s2"> = </span><span class="si">{schema}</span><span class="s2">.</span><span class="si">{temp_table}</span><span class="s2">.</span><span class="si">{column}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">column</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">temp_table</span><span class="o">=</span><span class="n">staging_name</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema_name</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">column_list</span><span class="p">)</span>
+            <span class="n">column</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">temp_table</span><span class="o">=</span><span class="n">staging_name</span><span class="p">,</span>
+            <span class="n">schema</span><span class="o">=</span><span class="n">schema_name</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">column_list</span><span class="p">)</span>
         <span class="n">temp_column_string</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="s2">&quot;</span><span class="si">{schema}</span><span class="s2">.</span><span class="si">{temp_table}</span><span class="s2">.</span><span class="si">{column}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">column</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">temp_table</span><span class="o">=</span><span class="n">staging_name</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema_name</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">column_list</span><span class="p">)</span>
+            <span class="n">column</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">temp_table</span><span class="o">=</span><span class="n">staging_name</span><span class="p">,</span>
+            <span class="n">schema</span><span class="o">=</span><span class="n">schema_name</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">column_list</span><span class="p">)</span>
         <span class="n">prod_column_string</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="s2">&quot;</span><span class="si">{column}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="n">column</span><span class="o">=</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">column_list</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE DATABASE </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db_name</span><span class="p">))</span>
-        <span class="n">create_temp_table_query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;CREATE TEMPORARY TABLE </span><span class="si">{schema}</span><span class="s2">.</span><span class="si">{temp_table}</span><span class="s2"></span>
-<span class="s2">            LIKE </span><span class="si">{schema}</span><span class="s2">.</span><span class="si">{table}</span><span class="s2">;&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">create_temp_table_query</span> <span class="o">=</span> \
+            <span class="sd">&quot;&quot;&quot;CREATE TEMPORARY TABLE {schema}.{temp_table}</span>
+<span class="sd">            LIKE {schema}.{table};&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">schema</span><span class="o">=</span><span class="n">schema_name</span>
                 <span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">table_name</span>
                 <span class="p">,</span> <span class="n">temp_table</span><span class="o">=</span><span class="n">staging_name</span><span class="p">)</span>
         <span class="n">load_temp_query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;COPY INTO </span><span class="si">{schema}</span><span class="s2">.</span><span class="si">{temp_table}</span><span class="s2">(</span><span class="si">{prod_columns}</span><span class="s2">)</span>
 <span class="s2">            FROM </span><span class="si">{filepath}</span><span class="s2"></span>
-<span class="s2">            FILE_FORMAT = (FORMAT_NAME=&#39;</span><span class="si">{format_name}</span><span class="s2">&#39;);&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+<span class="s2">            FILE_FORMAT = (FORMAT_NAME=&#39;</span><span class="si">{format_name}</span><span class="s2">&#39;</span>
+<span class="s2">            ESCAPE_UNENCLOSED_FIELD=NONE);&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">schema</span><span class="o">=</span><span class="n">schema_name</span>
                 <span class="p">,</span> <span class="n">temp_table</span><span class="o">=</span><span class="n">staging_name</span>
                 <span class="p">,</span> <span class="n">prod_columns</span><span class="o">=</span><span class="n">prod_column_string</span>
                 <span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="n">filepath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
-                    <span class="s2">&quot;s3://pitchbook-snowflake&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;@business_intelligence&quot;</span><span class="p">)</span>
+                    <span class="n">bucket</span><span class="p">[</span><span class="s2">&quot;prefix&quot;</span><span class="p">],</span>
+                    <span class="n">bucket</span><span class="p">[</span><span class="s2">&quot;stage&quot;</span><span class="p">])</span>
                 <span class="p">,</span> <span class="n">format_name</span><span class="o">=</span><span class="nb">format</span><span class="p">)</span>
-        <span class="n">merge_query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;MERGE INTO </span><span class="si">{schema}</span><span class="s2">.</span><span class="si">{table}</span><span class="s2"></span>
-<span class="s2">            USING </span><span class="si">{schema}</span><span class="s2">.</span><span class="si">{temp_table}</span><span class="s2"></span>
-<span class="s2">            ON </span><span class="si">{schema}</span><span class="s2">.</span><span class="si">{table}</span><span class="s2">.</span><span class="si">{update_on}</span><span class="s2"> = </span><span class="si">{schema}</span><span class="s2">.</span><span class="si">{temp_table}</span><span class="s2">.</span><span class="si">{update_on}</span><span class="s2"></span>
-<span class="s2">            WHEN MATCHED THEN UPDATE SET </span><span class="si">{update_column_match_string}</span><span class="s2"></span>
-<span class="s2">            WHEN NOT MATCHED THEN INSERT(</span><span class="si">{prod_columns}</span><span class="s2">) VALUES(</span><span class="si">{temp_columns}</span><span class="s2">);&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">merge_query</span> <span class="o">=</span> \
+    <span class="sd">&quot;&quot;&quot;MERGE INTO {schema}.{table}</span>
+<span class="sd">    USING {schema}.{temp_table}</span>
+<span class="sd">    ON {schema}.{table}.{update_on} = {schema}.{temp_table}.{update_on}</span>
+<span class="sd">    WHEN MATCHED THEN UPDATE SET {update_column_match_string}</span>
+<span class="sd">    WHEN NOT MATCHED THEN INSERT({prod_columns}) VALUES({temp_columns});&quot;&quot;&quot;</span><span class="o">.</span>\
+        <span class="nb">format</span><span class="p">(</span>
                 <span class="n">schema</span><span class="o">=</span><span class="n">schema_name</span>
                 <span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">table_name</span>
                 <span class="p">,</span> <span class="n">temp_table</span><span class="o">=</span><span class="n">staging_name</span>
@@ -365,45 +392,67 @@
                 <span class="p">,</span> <span class="n">update_column_match_string</span><span class="o">=</span><span class="n">update_column_match_string</span>
                 <span class="p">,</span> <span class="n">prod_columns</span><span class="o">=</span><span class="n">prod_column_string</span>
                 <span class="p">,</span> <span class="n">temp_columns</span><span class="o">=</span><span class="n">temp_column_string</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE SCHEMA </span><span class="si">{}</span><span class="s2">.PUBLIC;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db_name</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE SCHEMA </span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="s2">&quot;PUBLIC&quot;</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="n">create_temp_table_query</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="n">load_temp_query</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="n">merge_query</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SnowflakeConnection.replace"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.replace">[docs]</a>    <span class="k">def</span> <span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span>
-        <span class="n">filepath</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span> <span class="n">db_name</span><span class="o">=</span><span class="s2">&quot;BUSINESS_INTELLIGENCE&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Bulk replace s3 object into Snowflake.</span>
-<span class="sd">            Can replace with the same s3 object more than once.</span>
+        <span class="n">filepath</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span> <span class="n">db_name</span><span class="o">=</span><span class="n">s3_snowflake</span><span class="p">[</span><span class="s2">&quot;database_name&quot;</span><span class="p">]):</span>
+        <span class="sd">&quot;&quot;&quot;Bulk replaces s3 object into Snowflake.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            db_name: name of the database in snowflake</span>
+
 <span class="sd">            schema_name: name of the schema in snowflake</span>
+
 <span class="sd">            table_name: name of the table in snowflake</span>
+
 <span class="sd">            filepath: filepath of the s3 object</span>
+
 <span class="sd">            format: format of the s3 object</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            NA</span>
 <span class="sd">        Raises:</span>
 <span class="sd">            NA</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table_exists</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">db_name</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE DATABASE </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db_name</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;DELETE FROM </span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span>
-                <span class="p">)</span>
+        <span class="c1"># write staging</span>
+        <span class="n">staging_table_name</span> <span class="o">=</span> <span class="n">table_name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;_STAGING&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE SCHEMA </span><span class="si">{db}</span><span class="s2">.</span><span class="si">{sn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">db</span><span class="o">=</span><span class="n">db_name</span><span class="p">,</span> <span class="n">sn</span><span class="o">=</span><span class="n">schema_name</span>
             <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span>
-            <span class="n">filepath</span><span class="p">,</span> <span class="nb">format</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">schema_name</span><span class="p">,</span> <span class="n">staging_table_name</span><span class="p">,</span>
+            <span class="n">filepath</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="n">db_name</span>
+        <span class="p">)</span>
+        <span class="c1"># change table names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE SCHEMA </span><span class="si">{db}</span><span class="s2">.</span><span class="si">{sn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">db</span><span class="o">=</span><span class="n">db_name</span><span class="p">,</span> <span class="n">sn</span><span class="o">=</span><span class="n">schema_name</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;ALTER TABLE </span><span class="si">{tn}</span><span class="s2"> RENAME TO </span><span class="si">{gn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">gn</span><span class="o">=</span><span class="s2">&quot;garbage&quot;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;ALTER TABLE </span><span class="si">{stn}</span><span class="s2"> RENAME TO </span><span class="si">{tn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">stn</span><span class="o">=</span><span class="n">staging_table_name</span><span class="p">,</span> <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># drop the old table</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;DROP TABLE </span><span class="si">{gn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gn</span><span class="o">=</span><span class="s2">&quot;garbage&quot;</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="SnowflakeConnection.create"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.create">[docs]</a>    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">object_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Create a database object.</span>
+        <span class="sd">&quot;&quot;&quot;Creates a database object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            object_name: name of the object you are creating</span>
+
 <span class="sd">            object_type: (DATABASE, SCHEMA, WAREHOUSE, TABLE)</span>
+
 <span class="sd">            DATABASE(key argument): name of the database</span>
+
 <span class="sd">            SCHEMA(key argument): name of the schema</span>
+
 <span class="sd">            df(key argument): dataframe you want to create the table with</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            NA</span>
@@ -444,22 +493,27 @@
             <span class="c1"># default append creates the table</span>
             <span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">(),</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">savepath</span> <span class="o">=</span> \
-            <span class="s2">&quot;s3://pitchbook-snowflake/schema=</span><span class="si">{schema}</span><span class="s2">&quot;</span>\
+            <span class="s2">&quot;</span><span class="si">{prefix}</span><span class="s2">/schema=</span><span class="si">{schema}</span><span class="s2">&quot;</span>\
             <span class="s2">&quot;/table=</span><span class="si">{table}</span><span class="s2">/</span><span class="si">{today}</span><span class="s2">/</span><span class="si">{schema}</span><span class="s2">_</span><span class="si">{table}</span><span class="s2">.csv&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">schema</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;SCHEMA&quot;</span><span class="p">],</span> <span class="n">table</span><span class="o">=</span><span class="n">object_name</span><span class="p">,</span> <span class="n">today</span><span class="o">=</span><span class="n">today</span><span class="p">)</span>
+            <span class="n">prefix</span><span class="o">=</span><span class="n">s3_snowflake</span><span class="p">[</span><span class="s2">&quot;prefix&quot;</span><span class="p">],</span> <span class="n">schema</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;SCHEMA&quot;</span><span class="p">],</span>
+            <span class="n">table</span><span class="o">=</span><span class="n">object_name</span><span class="p">,</span> <span class="n">today</span><span class="o">=</span><span class="n">today</span><span class="p">)</span>
 
             <span class="n">flex_write</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;df&quot;</span><span class="p">],</span> <span class="n">savepath</span><span class="p">,</span><span class="n">s3</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">schema_name</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;SCHEMA&quot;</span><span class="p">],</span> <span class="n">table_name</span><span class="o">=</span><span class="n">object_name</span><span class="p">,</span>
                 <span class="n">filepath</span><span class="o">=</span><span class="n">savepath</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SnowflakeConnection.unload"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.unload">[docs]</a>    <span class="k">def</span> <span class="nf">unload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Unload a database table into a specified s3 location</span>
+        <span class="sd">&quot;&quot;&quot;Unloads a database table into a specified s3 location</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            database: name of the database</span>
+
 <span class="sd">            schema_name: name of the schema</span>
+
 <span class="sd">            table_name: name of the table</span>
+
 <span class="sd">            s3_path: filepath of the s3 object</span>
+
 <span class="sd">            kwargs: [&quot;aws_access_key_id&quot;, &quot;aws_secret_access_key&quot;]</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            NA</span>
@@ -473,12 +527,14 @@
             <span class="n">s3_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;s3_path&quot;</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
             <span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">(),</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">s3_path</span> <span class="o">=</span> <span class="s2">&quot;s3://pitchbook-snowflake/schema=</span><span class="si">{schema}</span><span class="s2">/table=</span><span class="si">{table}</span><span class="s2">/&quot;</span>\
-                <span class="s2">&quot;</span><span class="si">{today}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span> <span class="n">today</span><span class="o">=</span><span class="n">today</span><span class="p">)</span>
+            <span class="n">s3_path</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{prefix}</span><span class="s2">/schema=</span><span class="si">{schema}</span><span class="s2">/table=</span><span class="si">{table}</span><span class="s2">/&quot;</span>\
+                <span class="s2">&quot;</span><span class="si">{today}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">s3_snowflake</span><span class="p">[</span><span class="s2">&quot;prefix&quot;</span><span class="p">],</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+                                <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span> <span class="n">today</span><span class="o">=</span><span class="n">today</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">(),</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">s3_path</span> <span class="o">=</span> <span class="s2">&quot;s3://pitchbook-snowflake/schema=</span><span class="si">{schema}</span><span class="s2">/table=</span><span class="si">{table}</span><span class="s2">/&quot;</span>\
-                <span class="s2">&quot;</span><span class="si">{today}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span> <span class="n">today</span><span class="o">=</span><span class="n">today</span><span class="p">)</span>
+            <span class="n">s3_path</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{prefix}</span><span class="s2">/schema=</span><span class="si">{schema}</span><span class="s2">/table=</span><span class="si">{table}</span><span class="s2">/&quot;</span>\
+                <span class="s2">&quot;</span><span class="si">{today}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">s3_snowflake</span><span class="p">[</span><span class="s2">&quot;prefix&quot;</span><span class="p">],</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+                                <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span> <span class="n">today</span><span class="o">=</span><span class="n">today</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">set</span><span class="p">([</span><span class="s2">&quot;aws_access_key_id&quot;</span><span class="p">,</span> <span class="s2">&quot;aws_secret_access_key&quot;</span><span class="p">])</span> <span class="o">&lt;</span> \
             <span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)):</span>
             <span class="n">aws_key_given</span> <span class="o">=</span> <span class="kc">True</span>
@@ -527,11 +583,13 @@
 
 
 <div class="viewcode-block" id="SnowflakeConnection.get_metadata"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.get_metadata">[docs]</a>    <span class="k">def</span> <span class="nf">get_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get and return the metadata table.</span>
+        <span class="sd">&quot;&quot;&quot;Gets and returns the metadata table.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            database: name of the database</span>
+
 <span class="sd">            schema: name of the schema</span>
+
 <span class="sd">            table: name of the table</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            metadata: list of metadata of each field</span>
@@ -543,7 +601,7 @@
         <span class="k">return</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">col</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">description</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="SnowflakeConnection.get_query_id"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.get_query_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_query_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_order</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get and return the query_id.</span>
+        <span class="sd">&quot;&quot;&quot;Gets and returns the query_id.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            query_order: the order of the query_id being fetched</span>
@@ -557,7 +615,7 @@
         <span class="k">return</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;LAST_QUERY_ID(</span><span class="si">{ord}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">ord</span><span class="o">=</span><span class="n">query_order</span><span class="p">)][</span><span class="mi">0</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="SnowflakeConnection.cancel_query"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.cancel_query">[docs]</a>    <span class="k">def</span> <span class="nf">cancel_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_id</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Cancel the query of the given query_id.</span>
+        <span class="sd">&quot;&quot;&quot;Cancels the query associated with the given query id.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            query_id: the of query you want to cancel</span>
@@ -586,7 +644,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SnowflakeConnection.sql_dataframe"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.sql_dataframe">[docs]</a>    <span class="k">def</span> <span class="nf">sql_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Execute the query and return the queried results</span>
+        <span class="sd">&quot;&quot;&quot;Executes the query and return the queried results</span>
 <span class="sd">           in a pandas dataframe.</span>
 
 <span class="sd">        Args:</span>
@@ -602,11 +660,150 @@
             <span class="n">df_result</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">query</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;%&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">%%</span><span class="s2">&quot;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df_result</span></div>
 
-    <span class="k">def</span> <span class="nf">_create_custom_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Create custom engine to Snowflake.</span>
+<div class="viewcode-block" id="SnowflakeConnection.change_data_type"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.change_data_type">[docs]</a>    <span class="k">def</span> <span class="nf">change_data_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">column_name</span><span class="p">,</span>
+        <span class="n">data_type</span><span class="p">,</span> <span class="n">db_name</span><span class="o">=</span><span class="s2">&quot;BUSINESS_INTELLIGENCE&quot;</span><span class="p">,</span>
+        <span class="n">need_confirmation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change the data type of a column in a table</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            db_name: name of the database in snowflake</span>
+
+<span class="sd">            schema_name: name of the schema in snowflake</span>
+
+<span class="sd">            table_name: name of the table in snowflake</span>
+
+<span class="sd">            column_name: name of the column</span>
+
+<span class="sd">            data_type: name of the desired data type in string</span>
+
+<span class="sd">            need_confirmation: prompts to ask if the change should be committed</span>
+<span class="sd">                                when set to True</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            NA</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            NA</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># use the appropriate databae and schema</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE SCHEMA </span><span class="si">{dn}</span><span class="s2">.</span><span class="si">{sn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">dn</span><span class="o">=</span><span class="n">db_name</span><span class="p">,</span> <span class="n">sn</span><span class="o">=</span><span class="n">schema_name</span><span class="p">))</span>
+
+        <span class="c1"># add new column with prefix &#39;new_&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;ALTER TABLE </span><span class="si">{tn}</span><span class="s2"> ADD NEW_</span><span class="si">{cn}</span><span class="s2"> </span><span class="si">{dt}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">data_type</span><span class="p">))</span>
+
+        <span class="c1"># fetch the appropriate data type conversion sql function</span>
+        <span class="n">function_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_data_type_conversion_function</span><span class="p">(</span><span class="n">data_type</span><span class="p">,</span> <span class="n">force</span><span class="p">)</span>
+
+        <span class="c1"># update the newly created column</span>
+        <span class="k">if</span> <span class="n">function_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;TO_DATE&quot;</span><span class="p">,</span> <span class="s2">&quot;TO_TIMESTAMP&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;TRY_TO_DATE&quot;</span><span class="p">,</span> <span class="s2">&quot;TRY_TO_TIMESTAMP&quot;</span><span class="p">]:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span>
+                <span class="s2">&quot;Update </span><span class="si">{tn}</span><span class="s2"> SET NEW_</span><span class="si">{cn}</span><span class="s2"> = </span><span class="si">{fn}</span><span class="s2">(</span><span class="si">{cn}</span><span class="s2">, &#39;YYYY-MM-DD hh24:mi:ss&#39;)&quot;</span>\
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="n">function_name</span><span class="p">))</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span>
+                <span class="s2">&quot;Update </span><span class="si">{tn}</span><span class="s2"> SET NEW_</span><span class="si">{cn}</span><span class="s2"> = </span><span class="si">{fn}</span><span class="s2">(</span><span class="si">{cn}</span><span class="s2">, &#39;YYYY-MM-DD hh24:mi:ss.ff&#39;)&quot;</span>\
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="n">function_name</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;Update </span><span class="si">{tn}</span><span class="s2"> SET NEW_</span><span class="si">{cn}</span><span class="s2"> = </span><span class="si">{fn}</span><span class="s2">(</span><span class="si">{cn}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="n">function_name</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">force</span><span class="p">:</span>
+            <span class="c1"># check for count of null values in the new column</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sql_dataframe</span><span class="p">(</span>
+            <span class="s2">&quot;SELECT COUNT(*) as COUNT FROM </span><span class="si">{tn}</span><span class="s2"> WHERE NEW_</span><span class="si">{cn}</span><span class="s2"> IS NULL&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))[</span><span class="s2">&quot;COUNT&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">total_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sql_dataframe</span><span class="p">(</span>
+            <span class="s2">&quot;SELECT COUNT(*) as COUNT FROM </span><span class="si">{tn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))[</span><span class="s2">&quot;COUNT&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># ask for user input as to if it&#39;s okay to drop those rows</span>
+            <span class="n">question</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            Would you like to drop </span><span class="si">{cnt}</span><span class="s2"> rows out of </span><span class="si">{tcnt}</span><span class="s2"> where the values of</span>
+<span class="s2">            NEW_</span><span class="si">{cn}</span><span class="s2"> are NULL to complete the data type conversion?</span>
+<span class="s2">            </span><span class="se">\n</span><span class="s2">Answer &#39;yes&#39; or &#39;no&#39;&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">cnt</span><span class="o">=</span><span class="n">count</span><span class="p">,</span> <span class="n">tcnt</span><span class="o">=</span><span class="n">total_count</span><span class="p">,</span><span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">need_confirmation</span><span class="p">:</span>
+                <span class="n">answer</span> <span class="o">=</span> <span class="n">raw_input</span><span class="p">(</span><span class="n">question</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">answer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;yes&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;DELETE FROM </span><span class="si">{tn}</span><span class="s2"> WHERE NEW_</span><span class="si">{cn}</span><span class="s2"> IS NULL&quot;</span>\
+                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">answer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;no&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;ALTER TABLE </span><span class="si">{tn}</span><span class="s2"> DROP COLUMN NEW_</span><span class="si">{cn}</span><span class="s2">&quot;</span>\
+                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;Any changes you&#39;ve made have been rolled back.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;DELETE FROM </span><span class="si">{tn}</span><span class="s2"> WHERE NEW_</span><span class="si">{cn}</span><span class="s2"> IS NULL&quot;</span>\
+                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">need_confirmation</span><span class="p">:</span>
+            <span class="n">answer</span> <span class="o">=</span> <span class="n">raw_input</span><span class="p">(</span>
+                <span class="s2">&quot;Does the NEW_</span><span class="si">{cn}</span><span class="s2"> column look good?</span><span class="se">\n</span><span class="s2">Answer &#39;yes&#39; or &#39;no&#39;&quot;</span>\
+                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">answer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;yes&quot;</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">elif</span> <span class="n">answer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;no&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span>
+                    <span class="s2">&quot;ALTER TABLE </span><span class="si">{tn}</span><span class="s2"> DROP COLUMN NEW_</span><span class="si">{cn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Any changes you&#39;ve made have been rolled back.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># drop the old column</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;ALTER TABLE </span><span class="si">{tn}</span><span class="s2"> DROP COLUMN </span><span class="si">{cn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
+
+        <span class="c1"># rename the new column to replace the old column</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;ALTER TABLE </span><span class="si">{tn}</span><span class="s2"> RENAME COLUMN NEW_</span><span class="si">{cn}</span><span class="s2"> to </span><span class="si">{cn}</span><span class="s2">&quot;</span><span class="o">.</span>\
+            <span class="nb">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_get_data_type_conversion_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_type</span><span class="p">,</span> <span class="n">force</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets the sql function for the given data type.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data_type: name of the desired data type in string</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            sql_function: sql_function in string</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            NA</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#TODO add more sql functions for different data types</span>
+        <span class="k">if</span> <span class="n">force</span><span class="p">:</span>
+            <span class="n">sql_functions</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;TIMESTAMP&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_TIMESTAMP&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DATETIME&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_DATE&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;INTEGER&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_NUMBER&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;NUMBER&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_NUMBER&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;BOOLEAN&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_BOOLEAN&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;STRING&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_CHAR&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;CHARACTER&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_CHAR&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;CHAR&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_CHAR&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;FLOAT&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_DECIMAL&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DECIMAL&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_DECIMAL&quot;</span>
+                <span class="p">}</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
+            <span class="n">sql_functions</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;TIMESTAMP&quot;</span><span class="p">:</span><span class="s2">&quot;TO_TIMESTAMP&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DATETIME&quot;</span><span class="p">:</span><span class="s2">&quot;TO_DATE&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;INTEGER&quot;</span><span class="p">:</span><span class="s2">&quot;TO_NUMBER&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;NUMBER&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_NUMBER&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;BOOLEAN&quot;</span><span class="p">:</span><span class="s2">&quot;TO_BOOLEAN&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;STRING&quot;</span><span class="p">:</span><span class="s2">&quot;TO_CHAR&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;CHARACTER&quot;</span><span class="p">:</span><span class="s2">&quot;TO_CHAR&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;CHAR&quot;</span><span class="p">:</span><span class="s2">&quot;TO_CHAR&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;FLOAT&quot;</span><span class="p">:</span><span class="s2">&quot;TO_DECIMAL&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DECIMAL&quot;</span><span class="p">:</span><span class="s2">&quot;TO_DECIMAL&quot;</span>
+                <span class="p">}</span>
+        <span class="k">return</span> <span class="n">sql_functions</span><span class="p">[</span><span class="n">data_type</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span>
+
+    <span class="k">def</span> <span class="nf">_create_custom_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates custom engine to Snowflake.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            db_name: name of the database in snowflake</span>
+
 <span class="sd">            schema_name: name of the schema in snowflake</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            NA</span>
@@ -623,8 +820,8 @@
         <span class="n">custom_engine</span> <span class="o">=</span> <span class="n">create_engine</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">poolclass</span><span class="o">=</span><span class="n">NullPool</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">custom_engine</span>
 
-    <span class="k">def</span> <span class="nf">_table_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">db_name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Check to see if table exists.</span>
+    <span class="k">def</span> <span class="nf">_table_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">db_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checks to see if table exists.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            table_name: name of the table in snowflake</span>
@@ -633,17 +830,17 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            NA</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE WAREHOUSE PB_DW&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE DATABASE </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db_name</span><span class="p">))</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sql_dataframe</span><span class="p">(</span>
         <span class="s2">&quot;SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE=&#39;BASE TABLE&#39;&quot;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">TABLE_SCHEMA</span><span class="o">==</span><span class="n">schema_name</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">table_name</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">TABLE_NAME</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">def</span> <span class="nf">_close_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Close the open connection to Snowflake db.</span>
+        <span class="sd">&quot;&quot;&quot;Closes the open connection to Snowflake db.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            NA</span>
@@ -655,7 +852,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_drop_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Drop a table from Snowflake db.</span>
+        <span class="sd">&quot;&quot;&quot;Drops a table from Snowflake db.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            NA</span>
@@ -668,12 +865,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;DROP TABLE </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table_name</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_grant_permission</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Grant permission to database objects.</span>
+        <span class="sd">&quot;&quot;&quot;Grants permission to database objects.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            db_name:</span>
+
 <span class="sd">            schema_name:</span>
+
 <span class="sd">            table_name:</span>
+
 <span class="sd">            role_name:</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            NA</span>
@@ -693,6 +893,15 @@
                 <span class="n">schema_name</span><span class="p">,</span> <span class="n">role</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_format_for_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Formats the Pandas DataFrame for database load operation</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            df: Pandas DataFrame for formatting</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            df: Formatted Pandas DataFrame</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            NA</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">datetime_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="s2">&quot;_date&quot;</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
         <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -708,7 +917,35 @@
         <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
                 <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">df</span></div>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">def</span> <span class="nf">_get_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the relevant information regarding the s3 bucket in use</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filepath: path to the flat file stored in s3</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict_to_return: dictionary storing relevant information</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            NA</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">inspect</span>
+        <span class="n">s3_buckets</span> <span class="o">=</span> <span class="n">S3Buckets</span><span class="p">()</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getmembers</span><span class="p">(</span><span class="n">s3_buckets</span><span class="p">,</span>
+            <span class="k">lambda</span> <span class="n">a</span><span class="p">:</span><span class="ow">not</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">isroutine</span><span class="p">(</span><span class="n">a</span><span class="p">)))</span>
+        <span class="n">attr_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">attributes</span><span class="p">)):</span>
+            <span class="n">attr_dict</span><span class="p">[</span><span class="n">attributes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;prefix&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">i</span>
+
+        <span class="n">prefix</span> <span class="o">=</span> <span class="p">[</span><span class="n">prefix</span> <span class="k">for</span> <span class="n">prefix</span> <span class="ow">in</span> <span class="n">attr_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> \
+                    <span class="k">if</span><span class="p">(</span><span class="n">prefix</span> <span class="ow">in</span> <span class="n">filepath</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">prefix</span><span class="p">:</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">dict_to_return</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="n">attr_dict</span><span class="p">[</span><span class="n">prefix</span><span class="p">]][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SnowflakeException</span><span class="p">(</span><span class="s2">&quot;invalid filepath: not supported bucket.&quot;</span>\
+            <span class="s2">&quot;Contact BI to add your s3 bucket to s3_bucket configuration file&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dict_to_return</span></div>
 </pre></div>
 
            </div>

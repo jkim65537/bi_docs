@@ -162,7 +162,7 @@
 
 <div class="viewcode-block" id="S3BI"><a class="viewcode-back" href="../../bi_s3.html#bi_s3.S3BI">[docs]</a><span class="k">class</span> <span class="nc">S3BI</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="o">=</span><span class="s2">&quot;pitchbook-snowflake&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Easy way to read and write files from BI-related S3 buckets</span>
+        <span class="sd">&quot;&quot;&quot;Data-lake connection object to AWS S3</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            NA</span>
@@ -173,17 +173,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bucket_name</span> <span class="o">=</span> <span class="n">bucket_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bucket_name</span> <span class="o">==</span> <span class="s2">&quot;pitchbook-snowflake&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">&#39;s3&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">&#39;s3&#39;</span><span class="p">,</span>
+                <span class="n">aws_access_key_id</span><span class="o">=</span><span class="n">bi_s3_creds</span><span class="p">[</span><span class="s1">&#39;aws_access_key_id&#39;</span><span class="p">],</span>
+                <span class="n">aws_secret_access_key</span><span class="o">=</span><span class="n">bi_s3_creds</span><span class="p">[</span><span class="s1">&#39;key&#39;</span><span class="p">]</span>
+            <span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">bucket_name</span> <span class="o">==</span> <span class="s2">&quot;pb-unified-usage-data-source&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">&#39;s3&#39;</span><span class="p">,</span>
-                <span class="n">aws_access_key_id</span><span class="o">=</span><span class="n">dev_s3_creds</span><span class="p">[</span><span class="s1">&#39;key_id&#39;</span><span class="p">],</span>
+                <span class="n">aws_access_key_id</span><span class="o">=</span><span class="n">dev_s3_creds</span><span class="p">[</span><span class="s1">&#39;aws_access_key_id&#39;</span><span class="p">],</span>
                 <span class="n">aws_secret_access_key</span><span class="o">=</span><span class="n">dev_s3_creds</span><span class="p">[</span><span class="s1">&#39;key&#39;</span><span class="p">]</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;bucket_name: </span><span class="si">{}</span><span class="s2"> not supported yet&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">connection</span><span class="p">))</span>
 
-<div class="viewcode-block" id="S3BI.read_from_s3"><a class="viewcode-back" href="../../bi_s3.html#bi_s3.S3BI.read_from_s3">[docs]</a>    <span class="k">def</span> <span class="nf">read_from_s3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+<div class="viewcode-block" id="S3BI.read_from_s3"><a class="viewcode-back" href="../../bi_s3.html#bi_s3.S3BI.read_from_s3">[docs]</a>    <span class="k">def</span> <span class="nf">read_from_s3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Reads an s3 object and returns it in Pandas dataframe</span>
 
 <span class="sd">        Args:</span>
@@ -193,25 +196,39 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            NA</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;nrows&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">nrows</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;nrows&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nrows</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="s2">&quot;usecols&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">usecols</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;usecols&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">usecols</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="n">s3_prefix</span> <span class="o">=</span> <span class="s2">&quot;s3://</span><span class="si">{bn}</span><span class="s2">/&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bn</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket_name</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">s3_prefix</span> <span class="ow">in</span> <span class="n">filepath</span><span class="p">:</span>
             <span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">s3_prefix</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;.gz&quot;</span> <span class="ow">in</span> <span class="n">filepath</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_download_file</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_download_file</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s2">&quot;gz&quot;</span><span class="p">)</span>
             <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_gzip_as_pd</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_delete_temp_file</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_s3_output</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_download_file</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="s2">&quot;csv&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="s2">&quot;.csv&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filepath</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">error_bad_lines</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="n">low_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_path</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">error_bad_lines</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">low_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">nrows</span><span class="o">=</span><span class="n">nrows</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="n">usecols</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">error_bad_lines</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                    <span class="n">low_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">output</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_path</span><span class="p">,</span> <span class="n">error_bad_lines</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">low_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nrows</span><span class="o">=</span><span class="n">nrows</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="n">usecols</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_delete_temp_file</span><span class="p">()</span>
         <span class="n">col_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_column_names</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">col_names</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;column_names.csv&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filepath</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="s2">&quot;staging_file&quot;</span> <span class="ow">in</span> <span class="n">filepath</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">col_names</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;column_names.csv&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filepath</span><span class="p">:</span>
             <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">col_names</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
@@ -223,6 +240,7 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            df (pandas dataframe): the dataframe you want to write to s3</span>
+
 <span class="sd">            savepathpath (str): the filepath to s3 object</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            NA</span>
@@ -269,6 +287,8 @@
         <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
                 <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s1">&#39;NaT&#39;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="kc">None</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">NaT</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">})</span>
         <span class="k">return</span> <span class="n">df</span>
 
     <span class="k">def</span> <span class="nf">_get_s3_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
@@ -310,7 +330,7 @@
             <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">result</span>
 
-    <span class="k">def</span> <span class="nf">_get_temp_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="s2">&quot;gz&quot;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_temp_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="s2">&quot;csv&quot;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set up the savepath of the temp file</span>
 
 <span class="sd">        Args:</span>
@@ -322,22 +342,24 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">getpass</span>
         <span class="kn">import</span> <span class="nn">platform</span>
+        <span class="kn">import</span> <span class="nn">random</span>
+        <span class="n">random_num</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">101</span><span class="p">)</span>
         <span class="n">username</span> <span class="o">=</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">()</span>
         <span class="n">op_sys</span> <span class="o">=</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">op_sys</span> <span class="o">==</span> <span class="s2">&quot;Windows&quot;</span><span class="p">:</span>
-            <span class="n">temp_path</span> <span class="o">=</span> <span class="s2">&quot;C:/Users/</span><span class="si">{username}</span><span class="s2">/tempfile.</span><span class="si">{filetype}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="n">file_type</span>
+            <span class="n">temp_path</span> <span class="o">=</span> <span class="s2">&quot;C:/Users/</span><span class="si">{username}</span><span class="s2">/tempfile_</span><span class="si">{ri}</span><span class="s2">.</span><span class="si">{filetype}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="n">file_type</span><span class="p">,</span> <span class="n">ri</span><span class="o">=</span><span class="n">random_num</span>
             <span class="p">)</span>
         <span class="k">elif</span> <span class="n">op_sys</span> <span class="o">==</span> <span class="s2">&quot;Linux&quot;</span><span class="p">:</span>
-            <span class="n">temp_path</span> <span class="o">=</span> <span class="s2">&quot;/home/</span><span class="si">{username}</span><span class="s2">/tempfile.</span><span class="si">{filetype}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="n">file_type</span>
+            <span class="n">temp_path</span> <span class="o">=</span> <span class="s2">&quot;/home/</span><span class="si">{username}</span><span class="s2">/tempfile_</span><span class="si">{ri}</span><span class="s2">.</span><span class="si">{filetype}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">filetype</span><span class="o">=</span><span class="n">file_type</span><span class="p">,</span> <span class="n">ri</span><span class="o">=</span><span class="n">random_num</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">OSError</span><span class="p">(</span>
               <span class="s2">&quot;operating system: </span><span class="si">{op_sys}</span><span class="s2"> not supported&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">op_sys</span><span class="o">=</span><span class="n">op_sys</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">temp_path</span>
 
-    <span class="k">def</span> <span class="nf">_download_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_download_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">filetype</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Download the s3 object and save it as a temp file</span>
 
 <span class="sd">        Args:</span>
@@ -347,7 +369,11 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            NA</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">temp_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_temp_path</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_temp_path</span><span class="p">(</span><span class="n">filetype</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_path</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">pass</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">download_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_path</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_delete_temp_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

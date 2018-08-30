@@ -151,12 +151,31 @@
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span><span class="p">,</span><span class="n">timedelta</span>
 
 <div class="viewcode-block" id="Parser"><a class="viewcode-back" href="../../bi_tools.html#bi_tools.Parser">[docs]</a><span class="k">class</span> <span class="nc">Parser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parser object for easier system argument parsing.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        NA</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        NA</span>
+<span class="sd">    Raises:</span>
+<span class="sd">        NA</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span>
             <span class="s1">&#39;Combines test_platform_logs with test_platform_logs_archive&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exc_date</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_arg_parser</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_arg_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parses the arguments.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            NA</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            NA</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            NA</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        DATE:</span>
 <span class="sd">        &#39;2018-06-08&#39;</span>

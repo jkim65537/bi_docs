@@ -157,7 +157,7 @@
 <em class="property">class </em><code class="descclassname">bi_s3.</code><code class="descname">S3BI</code><span class="sig-paren">(</span><em>bucket_name='pitchbook-snowflake'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_s3/bi_s3.html#S3BI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_s3.S3BI" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="bi_s3.S3BI.read_from_s3">
-<code class="descname">read_from_s3</code><span class="sig-paren">(</span><em>filepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_s3/bi_s3.html#S3BI.read_from_s3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_s3.S3BI.read_from_s3" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_from_s3</code><span class="sig-paren">(</span><em>filepath</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/bi_s3/bi_s3.html#S3BI.read_from_s3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#bi_s3.S3BI.read_from_s3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads an s3 object and returns it in Pandas dataframe</p>
 <dl class="docutils">
 <dt>Args:</dt>
@@ -175,8 +175,9 @@
 <dd><p>Writes an s3 object</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>df (pandas dataframe): the dataframe you want to write to s3
-savepathpath (str): the filepath to s3 object</dd>
+<dd><p class="first">df (pandas dataframe): the dataframe you want to write to s3</p>
+<p class="last">savepathpath (str): the filepath to s3 object</p>
+</dd>
 <dt>Returns:</dt>
 <dd>NA</dd>
 <dt>Raises:</dt>
