@@ -8,3 +8,10 @@ bi_tools documentaiton
 
 .. autoclass:: Parser
     :members:
+
+.. autofunction:: wide_to_long
+    :members:
+
+.. autofunction:: long_to_wide
+    :members:
+
