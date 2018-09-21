@@ -8,3 +8,5 @@ bi_db documentaiton
 
 .. autoclass:: RedshiftConnection
     :members:
+
+

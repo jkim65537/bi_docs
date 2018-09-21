@@ -147,18 +147,15 @@
            <div itemprop="articleBody">
             
   <h1>Source code for bi_db.redshift_connection</h1><div class="highlight"><pre>
-<span></span><span class="c1"># load packages</span>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">getpass</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="k">import</span> <span class="n">create_engine</span>
-<span class="kn">from</span> <span class="nn">bi_exceptions</span> <span class="k">import</span> <span class="n">RedshiftException</span>
-<span class="kn">from</span> <span class="nn">db_connection</span> <span class="k">import</span> <span class="n">dbConnection</span>
+<span class="kn">from</span> <span class="nn">bi_db.bi_exceptions</span> <span class="k">import</span> <span class="n">RedshiftException</span>
+<span class="kn">from</span> <span class="nn">bi_db.db_connection</span> <span class="k">import</span> <span class="n">dbConnection</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
 <span class="kn">from</span> <span class="nn">bi_tools</span> <span class="k">import</span> <span class="n">flex_write</span>
-
-<span class="n">reload</span><span class="p">(</span><span class="n">sys</span><span class="p">)</span>
-<span class="n">sys</span><span class="o">.</span><span class="n">setdefaultencoding</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">biz_intel_creds</span> <span class="k">import</span> <span class="n">CredsList</span>
 <span class="n">redshift_creds</span> <span class="o">=</span> <span class="n">CredsList</span><span class="p">()</span><span class="o">.</span><span class="n">rs_dw</span>
@@ -387,7 +384,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">df</span><span class="o">.</span><span class="n">to_sql</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">con</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema_name</span><span class="p">,</span>\
                     <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">if_exists</span><span class="o">=</span><span class="s2">&quot;fail&quot;</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-            <span class="nb">print</span> <span class="s2">&quot;</span><span class="si">{table}</span><span class="s2"> successfully created.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table</span><span class="o">=</span><span class="n">table_name</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{table}</span><span class="s2"> successfully created.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table</span><span class="o">=</span><span class="n">table_name</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_grant_permission</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RedshiftConnection.replace_table"><a class="viewcode-back" href="../../bi_db.html#bi_db.RedshiftConnection.replace_table">[docs]</a>    <span class="k">def</span> <span class="nf">replace_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">):</span>
@@ -406,7 +403,7 @@
             <span class="k">raise</span> <span class="n">RedshiftException</span><span class="p">(</span><span class="s2">&quot;Update your python version to use this func&quot;</span><span class="p">)</span>
         <span class="n">df</span><span class="o">.</span><span class="n">to_sql</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">con</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema_name</span><span class="p">,</span>\
                 <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">if_exists</span><span class="o">=</span><span class="s2">&quot;replace&quot;</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-        <span class="nb">print</span> <span class="s2">&quot;</span><span class="si">{table}</span><span class="s2"> successfully replaced.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table</span><span class="o">=</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{table}</span><span class="s2"> successfully replaced.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table</span><span class="o">=</span><span class="n">table_name</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_grant_permission</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RedshiftConnection.update_table"><a class="viewcode-back" href="../../bi_db.html#bi_db.RedshiftConnection.update_table">[docs]</a>    <span class="k">def</span> <span class="nf">update_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">):</span>
@@ -423,10 +420,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="mi">181</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">RedshiftException</span><span class="p">(</span><span class="s2">&quot;Update your python version to use this func&quot;</span><span class="p">)</span>
-        <span class="nb">print</span> <span class="s2">&quot;Updating table...&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Updating table...&quot;</span><span class="p">)</span>
         <span class="n">df</span><span class="o">.</span><span class="n">to_sql</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">con</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema_name</span><span class="p">,</span>\
                 <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">if_exists</span><span class="o">=</span><span class="s2">&quot;append&quot;</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-        <span class="nb">print</span> <span class="s2">&quot;</span><span class="si">{table}</span><span class="s2"> successfully updated.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table</span><span class="o">=</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{table}</span><span class="s2"> successfully updated.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table</span><span class="o">=</span><span class="n">table_name</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_grant_permission</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">)</span></div>
 
 
@@ -468,10 +465,10 @@
         <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;/home/</span><span class="si">{username}</span><span class="s2">/csv/</span><span class="si">{filename}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span>
                                                             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
         <span class="n">bucket_name</span> <span class="o">=</span> <span class="s2">&quot;redshiftstoragetransfer&quot;</span>
-        <span class="nb">print</span> <span class="s2">&quot;Writing the CSV...&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Writing the CSV...&quot;</span><span class="p">)</span>
         <span class="n">insert_dataframe</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">s3</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s1">&#39;s3&#39;</span><span class="p">)</span>
-        <span class="nb">print</span> <span class="s2">&quot;Uploading the CSV to S3&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Uploading the CSV to S3&quot;</span><span class="p">)</span>
         <span class="n">s3</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
         <span class="n">column_names</span> <span class="o">=</span> <span class="n">list_to_string</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">insert_dataframe</span><span class="p">))</span>
         <span class="n">copy_query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
@@ -488,10 +485,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">copy_query</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span> <span class="s2">&quot;</span><span class="si">{table_name}</span><span class="s2"> does not exist in </span><span class="si">{schema_name}</span><span class="s2">&quot;</span><span class="o">.</span>\
-                <span class="nb">format</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="o">=</span><span class="n">schema_name</span><span class="p">)</span>
-        <span class="nb">print</span> <span class="s2">&quot;Saving </span><span class="si">{table_name}</span><span class="s2"> on </span><span class="si">{schema_name}</span><span class="s2">&quot;</span><span class="o">.</span>\
-            <span class="nb">format</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="o">=</span><span class="n">schema_name</span><span class="p">)</span></div>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{table_name}</span><span class="s2"> does not exist in </span><span class="si">{schema_name}</span><span class="s2">&quot;</span><span class="o">.</span>\
+                <span class="nb">format</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="o">=</span><span class="n">schema_name</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Saving </span><span class="si">{table_name}</span><span class="s2"> on </span><span class="si">{schema_name}</span><span class="s2">&quot;</span><span class="o">.</span>\
+            <span class="nb">format</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">schema_name</span><span class="o">=</span><span class="n">schema_name</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="RedshiftConnection.sql_dataframe"><a class="viewcode-back" href="../../bi_db.html#bi_db.RedshiftConnection.sql_dataframe">[docs]</a>    <span class="k">def</span> <span class="nf">sql_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Execute the query and return the queried results</span>

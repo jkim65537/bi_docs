@@ -147,12 +147,11 @@
            <div itemprop="articleBody">
             
   <h1>Source code for bi_db.snowflake_connection</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">snowflake.connector</span>
-<span class="kn">from</span> <span class="nn">db_connection</span> <span class="k">import</span> <span class="n">dbConnection</span>
-<span class="kn">from</span> <span class="nn">redshift_connection</span> <span class="k">import</span> <span class="n">RedshiftConnection</span>
-<span class="kn">from</span> <span class="nn">bi_exceptions</span> <span class="k">import</span> <span class="n">SnowflakeException</span>
+<span class="kn">from</span> <span class="nn">bi_db.bi_exceptions</span> <span class="k">import</span> <span class="n">SnowflakeException</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="k">import</span> <span class="n">create_engine</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy.pool</span> <span class="k">import</span> <span class="n">NullPool</span>
 <span class="kn">from</span> <span class="nn">snowflake.sqlalchemy</span> <span class="k">import</span> <span class="n">URL</span>
@@ -662,7 +661,7 @@
 
 <div class="viewcode-block" id="SnowflakeConnection.change_data_type"><a class="viewcode-back" href="../../bi_db.html#bi_db.SnowflakeConnection.change_data_type">[docs]</a>    <span class="k">def</span> <span class="nf">change_data_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema_name</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">column_name</span><span class="p">,</span>
         <span class="n">data_type</span><span class="p">,</span> <span class="n">db_name</span><span class="o">=</span><span class="s2">&quot;BUSINESS_INTELLIGENCE&quot;</span><span class="p">,</span>
-        <span class="n">need_confirmation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">need_confirmation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">time_format</span><span class="o">=</span><span class="s1">&#39;YYYY-MM-DD&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Change the data type of a column in a table</span>
 
 <span class="sd">        Args:</span>
@@ -678,64 +677,109 @@
 
 <span class="sd">            need_confirmation: prompts to ask if the change should be committed</span>
 <span class="sd">                                when set to True</span>
+<span class="sd">            force: tries to force data type conversion then prompts to ask</span>
+<span class="sd">                    if the rows with invalid values should be dropped</span>
+<span class="sd">            time_format: format of time the string value is in</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            NA</span>
 <span class="sd">        Raises:</span>
 <span class="sd">            NA</span>
+
+<span class="sd">        Below is the mapping between your desired data type and sql functions</span>
+<span class="sd">        used for each one.</span>
+
+<span class="sd">        If &#39;force&#39; argument is given and it&#39;s set to &#39;True&#39;:</span>
+<span class="sd">        sql_functions = {</span>
+<span class="sd">            &quot;TIMESTAMP&quot;:&quot;TRY_TO_TIMESTAMP&quot;,</span>
+<span class="sd">            &quot;DATE&quot;:&quot;TRY_TO_DATE&quot;,</span>
+<span class="sd">            &quot;TIME&quot;:&quot;TRY_TO_TIME&quot;,</span>
+<span class="sd">            &quot;NUMBER&quot;:&quot;TRY_TO_NUMBER&quot;,</span>
+<span class="sd">            &quot;BINARY&quot;:&quot;TRY_TO_BINARY&quot;,</span>
+<span class="sd">            &quot;BOOLEAN&quot;:&quot;TRY_TO_BOOLEAN&quot;,</span>
+<span class="sd">            &quot;CHAR&quot;:&quot;TO_CHAR&quot;,</span>
+<span class="sd">            &quot;NUMERIC&quot;:&quot;TRY_TO_NUMERIC&quot;,</span>
+<span class="sd">            &quot;DECIMAL&quot;:&quot;TRY_TO_DECIMAL&quot;,</span>
+<span class="sd">            &quot;DOUBLE&quot;:&quot;TRY_TO_DOUBLE&quot;,</span>
+<span class="sd">            &quot;TIMESTAMP&quot;:&quot;TRY_TO_TIMESTAMP&quot;</span>
+<span class="sd">            }</span>
+<span class="sd">        else if &#39;force&#39; argument is not given or it&#39;s set to &#39;False&#39;</span>
+<span class="sd">        sql_functions = {</span>
+<span class="sd">            &quot;TIMESTAMP&quot;:&quot;TO_TIMESTAMP&quot;,</span>
+<span class="sd">            &quot;DATE&quot;:&quot;TO_DATE&quot;,</span>
+<span class="sd">            &quot;TIME&quot;:&quot;TO_TIME&quot;,</span>
+<span class="sd">            &quot;NUMBER&quot;:&quot;TO_NUMBER&quot;,</span>
+<span class="sd">            &quot;BINARY&quot;:&quot;TO_BINARY&quot;,</span>
+<span class="sd">            &quot;BOOLEAN&quot;:&quot;TO_BOOLEAN&quot;,</span>
+<span class="sd">            &quot;CHAR&quot;:&quot;TO_CHAR&quot;,</span>
+<span class="sd">            &quot;NUMERIC&quot;:&quot;TO_NUMERIC&quot;,</span>
+<span class="sd">            &quot;DECIMAL&quot;:&quot;TO_DECIMAL&quot;,</span>
+<span class="sd">            &quot;DOUBLE&quot;:&quot;TO_DOUBLE&quot;,</span>
+<span class="sd">            &quot;TIMESTAMP&quot;:&quot;TRY_TO_TIMESTAMP&quot;</span>
+<span class="sd">            }</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># use the appropriate databae and schema</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE SCHEMA </span><span class="si">{dn}</span><span class="s2">.</span><span class="si">{sn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">dn</span><span class="o">=</span><span class="n">db_name</span><span class="p">,</span> <span class="n">sn</span><span class="o">=</span><span class="n">schema_name</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;USE SCHEMA </span><span class="si">{dn}</span><span class="s2">.</span><span class="si">{sn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dn</span><span class="o">=</span><span class="n">db_name</span><span class="p">,</span>
+                                                        <span class="n">sn</span><span class="o">=</span><span class="n">schema_name</span><span class="p">))</span>
 
         <span class="c1"># add new column with prefix &#39;new_&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;ALTER TABLE </span><span class="si">{tn}</span><span class="s2"> ADD NEW_</span><span class="si">{cn}</span><span class="s2"> </span><span class="si">{dt}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">data_type</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;ALTER TABLE </span><span class="si">{tn}</span><span class="s2"> ADD NEW_</span><span class="si">{cn}</span><span class="s2"> </span><span class="si">{dt}</span><span class="s2">&quot;</span>\
+            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span>
+                    <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">,</span>
+                    <span class="n">dt</span><span class="o">=</span><span class="n">data_type</span><span class="p">))</span>
 
         <span class="c1"># fetch the appropriate data type conversion sql function</span>
-        <span class="n">function_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_data_type_conversion_function</span><span class="p">(</span><span class="n">data_type</span><span class="p">,</span> <span class="n">force</span><span class="p">)</span>
+        <span class="n">function_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_data_type_conversion_function</span><span class="p">(</span><span class="n">data_type</span><span class="p">,</span>
+                                                                <span class="n">force</span><span class="p">)</span>
 
         <span class="c1"># update the newly created column</span>
-        <span class="k">if</span> <span class="n">function_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;TO_DATE&quot;</span><span class="p">,</span> <span class="s2">&quot;TO_TIMESTAMP&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;TRY_TO_DATE&quot;</span><span class="p">,</span> <span class="s2">&quot;TRY_TO_TIMESTAMP&quot;</span><span class="p">]:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span>
-                <span class="s2">&quot;Update </span><span class="si">{tn}</span><span class="s2"> SET NEW_</span><span class="si">{cn}</span><span class="s2"> = </span><span class="si">{fn}</span><span class="s2">(</span><span class="si">{cn}</span><span class="s2">, &#39;YYYY-MM-DD hh24:mi:ss&#39;)&quot;</span>\
-                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="n">function_name</span><span class="p">))</span>
-            <span class="k">except</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span>
-                <span class="s2">&quot;Update </span><span class="si">{tn}</span><span class="s2"> SET NEW_</span><span class="si">{cn}</span><span class="s2"> = </span><span class="si">{fn}</span><span class="s2">(</span><span class="si">{cn}</span><span class="s2">, &#39;YYYY-MM-DD hh24:mi:ss.ff&#39;)&quot;</span>\
-                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="n">function_name</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">function_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;TO_DATE&quot;</span><span class="p">,</span> <span class="s2">&quot;TO_TIMESTAMP&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span>
+            <span class="s2">&quot;Update </span><span class="si">{tn}</span><span class="s2"> SET NEW_</span><span class="si">{cn}</span><span class="s2"> = </span><span class="si">{fn}</span><span class="s2">(</span><span class="si">{cn}</span><span class="s2">,&quot;</span> <span class="o">+</span> \
+            <span class="s2">&quot; &#39;</span><span class="si">{date_format}</span><span class="s2">&#39;)&quot;</span>\
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span>
+                        <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">,</span>
+                        <span class="n">fn</span><span class="o">=</span><span class="n">function_name</span><span class="p">,</span>
+                        <span class="n">date_format</span><span class="o">=</span><span class="n">time_format</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;Update </span><span class="si">{tn}</span><span class="s2"> SET NEW_</span><span class="si">{cn}</span><span class="s2"> = </span><span class="si">{fn}</span><span class="s2">(</span><span class="si">{cn}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">,</span> <span class="n">fn</span><span class="o">=</span><span class="n">function_name</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;Update </span><span class="si">{tn}</span><span class="s2"> SET NEW_</span><span class="si">{cn}</span><span class="s2"> = </span><span class="si">{fn}</span><span class="s2">(</span><span class="si">{cn}</span><span class="s2">)&quot;</span>\
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span>
+                        <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">,</span>
+                        <span class="n">fn</span><span class="o">=</span><span class="n">function_name</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">force</span><span class="p">:</span>
             <span class="c1"># check for count of null values in the new column</span>
             <span class="n">count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sql_dataframe</span><span class="p">(</span>
-            <span class="s2">&quot;SELECT COUNT(*) as COUNT FROM </span><span class="si">{tn}</span><span class="s2"> WHERE NEW_</span><span class="si">{cn}</span><span class="s2"> IS NULL&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))[</span><span class="s2">&quot;COUNT&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="s2">&quot;SELECT COUNT(*) as COUNT FROM </span><span class="si">{tn}</span><span class="s2"> WHERE NEW_</span><span class="si">{cn}</span><span class="s2"> IS NULL&quot;</span>\
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span>
+                        <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))[</span><span class="s2">&quot;COUNT&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">total_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sql_dataframe</span><span class="p">(</span>
-            <span class="s2">&quot;SELECT COUNT(*) as COUNT FROM </span><span class="si">{tn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))[</span><span class="s2">&quot;COUNT&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="s2">&quot;SELECT COUNT(*) as COUNT FROM </span><span class="si">{tn}</span><span class="s2">&quot;</span>\
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span>
+                        <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))[</span><span class="s2">&quot;COUNT&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
             <span class="c1"># ask for user input as to if it&#39;s okay to drop those rows</span>
             <span class="n">question</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">            Would you like to drop </span><span class="si">{cnt}</span><span class="s2"> rows out of </span><span class="si">{tcnt}</span><span class="s2"> where the values of</span>
 <span class="s2">            NEW_</span><span class="si">{cn}</span><span class="s2"> are NULL to complete the data type conversion?</span>
-<span class="s2">            </span><span class="se">\n</span><span class="s2">Answer &#39;yes&#39; or &#39;no&#39;&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">cnt</span><span class="o">=</span><span class="n">count</span><span class="p">,</span> <span class="n">tcnt</span><span class="o">=</span><span class="n">total_count</span><span class="p">,</span><span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">)</span>
+<span class="s2">            </span><span class="se">\n</span><span class="s2">Answer &#39;yes&#39; or &#39;no&#39;&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cnt</span><span class="o">=</span><span class="n">count</span><span class="p">,</span>
+                                            <span class="n">tcnt</span><span class="o">=</span><span class="n">total_count</span><span class="p">,</span>
+                                            <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">need_confirmation</span><span class="p">:</span>
                 <span class="n">answer</span> <span class="o">=</span> <span class="n">raw_input</span><span class="p">(</span><span class="n">question</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">answer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;yes&quot;</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;DELETE FROM </span><span class="si">{tn}</span><span class="s2"> WHERE NEW_</span><span class="si">{cn}</span><span class="s2"> IS NULL&quot;</span>\
-                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span>
+                        <span class="s2">&quot;DELETE FROM </span><span class="si">{tn}</span><span class="s2"> WHERE NEW_</span><span class="si">{cn}</span><span class="s2"> IS NULL&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                                                <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span>
+                                                                <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
                 <span class="k">elif</span> <span class="n">answer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;no&quot;</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;ALTER TABLE </span><span class="si">{tn}</span><span class="s2"> DROP COLUMN NEW_</span><span class="si">{cn}</span><span class="s2">&quot;</span>\
-                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
+                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span>
+                                <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                         <span class="s2">&quot;Any changes you&#39;ve made have been rolled back.&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;DELETE FROM </span><span class="si">{tn}</span><span class="s2"> WHERE NEW_</span><span class="si">{cn}</span><span class="s2"> IS NULL&quot;</span>\
-                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
+                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span>
+                            <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">need_confirmation</span><span class="p">:</span>
             <span class="n">answer</span> <span class="o">=</span> <span class="n">raw_input</span><span class="p">(</span>
@@ -746,17 +790,20 @@
             <span class="k">elif</span> <span class="n">answer</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;no&quot;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span>
                     <span class="s2">&quot;ALTER TABLE </span><span class="si">{tn}</span><span class="s2"> DROP COLUMN NEW_</span><span class="si">{cn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
+                                                                <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span>
+                                                                <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="s2">&quot;Any changes you&#39;ve made have been rolled back.&quot;</span><span class="p">)</span>
 
         <span class="c1"># drop the old column</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;ALTER TABLE </span><span class="si">{tn}</span><span class="s2"> DROP COLUMN </span><span class="si">{cn}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
+                                                                <span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span>
+                                                                <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span>
 
         <span class="c1"># rename the new column to replace the old column</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">query_executor</span><span class="p">(</span><span class="s2">&quot;ALTER TABLE </span><span class="si">{tn}</span><span class="s2"> RENAME COLUMN NEW_</span><span class="si">{cn}</span><span class="s2"> to </span><span class="si">{cn}</span><span class="s2">&quot;</span><span class="o">.</span>\
-            <span class="nb">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span></div>
+            <span class="nb">format</span><span class="p">(</span><span class="n">tn</span><span class="o">=</span><span class="n">table_name</span><span class="p">,</span>
+                    <span class="n">cn</span><span class="o">=</span><span class="n">column_name</span><span class="p">))</span></div>
 
 
     <span class="k">def</span> <span class="nf">_get_data_type_conversion_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_type</span><span class="p">,</span> <span class="n">force</span><span class="p">):</span>
@@ -773,28 +820,30 @@
         <span class="k">if</span> <span class="n">force</span><span class="p">:</span>
             <span class="n">sql_functions</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;TIMESTAMP&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_TIMESTAMP&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;DATETIME&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_DATE&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;INTEGER&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_NUMBER&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DATE&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_DATE&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TIME&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_TIME&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;NUMBER&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_NUMBER&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;BINARY&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_BINARY&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;BOOLEAN&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_BOOLEAN&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;STRING&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_CHAR&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;CHARACTER&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_CHAR&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;CHAR&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_CHAR&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;FLOAT&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_DECIMAL&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;DECIMAL&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_DECIMAL&quot;</span>
+                <span class="s2">&quot;CHAR&quot;</span><span class="p">:</span><span class="s2">&quot;TO_CHAR&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;NUMERIC&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_NUMERIC&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DECIMAL&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_DECIMAL&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DOUBLE&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_DOUBLE&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TIMESTAMP&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_TIMESTAMP&quot;</span>
                 <span class="p">}</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">force</span><span class="p">:</span>
             <span class="n">sql_functions</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="s2">&quot;TIMESTAMP&quot;</span><span class="p">:</span><span class="s2">&quot;TO_TIMESTAMP&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;DATETIME&quot;</span><span class="p">:</span><span class="s2">&quot;TO_DATE&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;INTEGER&quot;</span><span class="p">:</span><span class="s2">&quot;TO_NUMBER&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;NUMBER&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_NUMBER&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DATE&quot;</span><span class="p">:</span><span class="s2">&quot;TO_DATE&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TIME&quot;</span><span class="p">:</span><span class="s2">&quot;TO_TIME&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;NUMBER&quot;</span><span class="p">:</span><span class="s2">&quot;TO_NUMBER&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;BINARY&quot;</span><span class="p">:</span><span class="s2">&quot;TO_BINARY&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;BOOLEAN&quot;</span><span class="p">:</span><span class="s2">&quot;TO_BOOLEAN&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;STRING&quot;</span><span class="p">:</span><span class="s2">&quot;TO_CHAR&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;CHARACTER&quot;</span><span class="p">:</span><span class="s2">&quot;TO_CHAR&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;CHAR&quot;</span><span class="p">:</span><span class="s2">&quot;TO_CHAR&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;FLOAT&quot;</span><span class="p">:</span><span class="s2">&quot;TO_DECIMAL&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;DECIMAL&quot;</span><span class="p">:</span><span class="s2">&quot;TO_DECIMAL&quot;</span>
+                <span class="s2">&quot;NUMERIC&quot;</span><span class="p">:</span><span class="s2">&quot;TO_NUMERIC&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DECIMAL&quot;</span><span class="p">:</span><span class="s2">&quot;TO_DECIMAL&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;DOUBLE&quot;</span><span class="p">:</span><span class="s2">&quot;TO_DOUBLE&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;TIMESTAMP&quot;</span><span class="p">:</span><span class="s2">&quot;TRY_TO_TIMESTAMP&quot;</span>
                 <span class="p">}</span>
         <span class="k">return</span> <span class="n">sql_functions</span><span class="p">[</span><span class="n">data_type</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span>
 
